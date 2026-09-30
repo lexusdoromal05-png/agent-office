@@ -1,11 +1,11 @@
 import { InferenceAdapter } from '@agent-office/core';
 
-export async function completeJson(adapter: InferenceAdapter, model: string, prompt: string, temperature: number): Promise<any> {
+export async function completeJson(adapter: InferenceAdapter, model: string, system: string, prompt: string, temperature: number): Promise<any> {
     let content: string;
     try {
         const res = await adapter.complete({
             model,
-            messages: [{ role: 'user', content: prompt }],
+            messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
             temperature,
             format: 'json',
         });
@@ -34,8 +34,4 @@ function friendlyError(e: any, model: string): string {
         return 'Could not reach Ollama. Make sure the Ollama app is running.';
     }
     return message;
-}
-
-export function str(value: any): string {
-    return typeof value === 'string' ? value.trim() : '';
 }

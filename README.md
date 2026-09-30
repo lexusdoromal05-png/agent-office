@@ -43,6 +43,40 @@ https://github.com/user-attachments/assets/da76e31d-ff34-4ce1-9092-5bf9e6ee2058
 
 ---
 
+## 🛰️ Cypher — Connector-First Operations Agent
+
+The office team has been reset to a single agent: **Cypher**, a chief-of-staff agent that reads your connected work systems, reconciles what each one says, and briefs you on what needs you. It lives at its desk in the office and in the **🛰️ Command Center** panel.
+
+| Command | What Cypher does |
+|---------|------------------|
+| ☀️ **START MY DAY** | Sweeps every connector since the last sweep (or the previous working day) and builds the Daily Executive Brief |
+| 👥 **WHAT IS HAPPENING WITH THE TEAM?** | Critical / Needs my action / Blocked / Waiting / On track / Potential risk |
+| 🏢 **WHAT IS HAPPENING WITH THE CLIENT?** | What the client said vs. what our team said, current reality, open action, risk, recommended response |
+| 🔍 **WHAT AM I MISSING?** | Broader two-week sweep ranked by operational importance |
+| ▶️ **WHAT SHOULD I DO NOW?** | Refreshes, then DO THIS NOW + the next three |
+| 💬 Any question | e.g. "Did Bobby approve the Tomoland deck?" — answered from sources, with citations |
+
+**How it works**
+
+1. **Sweep** — Slack, WhatsApp, Gmail, Jira, Calendar, Drive/Docs/Sheets/Slides, Notion, Discord, and anything pushed to the ingest API are read in parallel.
+2. **Raw extraction** — every statement is kept verbatim with its source, author, and timestamp, and tagged with watched accounts and people (`packages/server/src/ops/watchlist.ts`).
+3. **Reconciliation** — the model merges records about the same work into one item and must cite record IDs. Citations to anything that was not read are dropped and the item is marked **UNSOURCED**; chat alone can never mark work "Done (verified)"; client mood without the client's own words becomes **Unknown**; contradictions are shown, not resolved.
+4. **Operational model** — items persist in SQLite and are updated on every sweep instead of being rebuilt from scratch.
+5. **Brief** — rendered in fixed formats with sources, **STATUS MAY BE STALE** markers (evidence older than 48h), and an **ACCESS GAP** block for every connector that is disconnected, failing, or incomplete.
+
+**Read before write.** Cypher only ever *proposes* messages or comments. They sit in *Pending actions* until you press **Approve & send**, and they are marked sent only when Slack or Jira returns a confirmation. Other action types (email, WhatsApp) are copy-and-send. Standing authorization per action type is opt-in through `OPS_STANDING_AUTH`.
+
+**Anthony follow-up rule.** Every sweep looks back two weeks for your last request to Anthony and his last response. If reporting is still outstanding it flags **FOLLOW-UP REQUIRED — ANTHONY**, or says a follow-up was already sent today so you don't ping twice.
+
+**Connecting systems.** Copy `.env.example` to `.env` and fill in only what you use; everything else shows up as an ACCESS GAP. Set `OPS_ME_NAMES` so Cypher can recognise your own messages and mentions. Notes:
+- **WhatsApp** — uses the WhatsApp Business Cloud API webhook (`/api/webhooks/whatsapp`), so only messages to the connected business number are visible. Personal WhatsApp chats have no official API.
+- **Everything else** (meeting transcripts, CRM, dashboards) — `POST /api/ops/ingest` with `Authorization: Bearer $OPS_INGEST_TOKEN` and `{ "source", "author", "text", "timestamp", "url" }`.
+- **Model** — briefs use `OPS_MODEL` (falls back to `OLLAMA_MODEL`). Reconciling dozens of records works much better with a larger model than the 7B default.
+
+**In Claude Code.** The same operating mode ships as a Claude Code subagent in [`.claude/agents/cypher.md`](.claude/agents/cypher.md). In a Claude Code session with your Slack, Gmail, Jira, Google Drive, or other MCP connectors attached, ask "START MY DAY" and Claude hands it to Cypher, which uses those connectors directly.
+
+---
+
 ## 🎬 How It Works
 
 ```
@@ -114,7 +148,7 @@ npm run start --workspace=@agent-office/server
 npm run dev --workspace=@agent-office/ui
 ```
 
-Open **http://localhost:5173** — watch Alice and Bob come alive! 🎉
+Open **http://localhost:5173**, open the **🛰️ Command Center** panel, and press **START MY DAY**. Connect your systems first (see *Cypher* above).
 
 ---
 
@@ -222,7 +256,7 @@ Modify `furnitureTargets` in `OfficeRoom.ts` or use the in-browser Layout Editor
 |---------|-------------|
 | `@agent-office/core` | Agent lifecycle (Perceive → Think → Act), Office grid, Task system, Memory with importance scoring |
 | `@agent-office/adapters` | InferenceAdapter interface, OllamaAdapter, OpenAICompatibleAdapter, PromptBuilder |
-| `@agent-office/server` | Colyseus room, game loop, ToolExecutor (code/search/notes), MemoryStore (SQLite + embeddings) |
+| `@agent-office/server` | Colyseus room, game loop, ToolExecutor (code/search/notes), MemoryStore (SQLite + embeddings), Cypher ops agent and connectors (`src/ops`) |
 | `@agent-office/ui` | Phaser.js renderer, React overlay (Chat, TaskBoard, Inspector, SystemLog, LayoutEditor) |
 | `@agent-office/cli` | `create-agent-office` scaffold, `add-agent` commands |
 
@@ -234,6 +268,7 @@ Modify `furnitureTargets` in `OfficeRoom.ts` or use the in-browser Layout Editor
 npm test                                    # All tests
 npm test --workspace=@agent-office/core     # Core only
 npm test --workspace=@agent-office/adapters # Adapters only
+npx jest packages/server                    # Cypher ops agent
 ```
 
 ---

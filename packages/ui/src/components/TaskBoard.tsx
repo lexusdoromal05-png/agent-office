@@ -92,10 +92,7 @@ export function TaskBoard() {
                         }}
                     >
                         <option value="auto">🤖 Auto-assign</option>
-                        <option value="killjoy">Killjoy (Lead Research)</option>
-                        <option value="raze">Raze (Outreach)</option>
-                        <option value="clove">Clove (Comments)</option>
-                        <option value="jett">Jett (Community)</option>
+                        <option value="cypher">Cypher (Operations)</option>
                     </select>
                     <button type="submit" style={{
                         padding: '6px 14px', borderRadius: 6, border: 'none',

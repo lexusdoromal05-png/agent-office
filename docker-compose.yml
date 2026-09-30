@@ -7,8 +7,12 @@ services:
       dockerfile: packages/server/Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - path: .env
+        required: false
     environment:
       - DATABASE_URL=sqlite:/data/office.db
+      - OPS_DB_PATH=/data/ops.db
       - REDIS_URL=redis://redis:6379
     volumes:
       - ./data:/data

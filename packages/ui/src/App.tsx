@@ -8,8 +8,7 @@ import { HighlightsFeed } from './components/HighlightsFeed';
 import { AgentPulseBoard } from './components/AgentPulseBoard';
 import { RelationshipGraph } from './components/RelationshipGraph';
 import { EpisodeRecapPanel } from './components/EpisodeRecapPanel';
-import { OutreachStudio } from './components/OutreachStudio';
-import { TeamPanel } from './components/TeamPanel';
+import { CommandCenter } from './components/CommandCenter';
 import { PanelToolbar } from './components/PanelToolbar';
 
 export function App() {
@@ -32,8 +31,7 @@ export function App() {
             <HighlightsFeed />
             <AgentPulseBoard />
             <EpisodeRecapPanel />
-            <OutreachStudio />
-            <TeamPanel />
+            <CommandCenter />
             </div>
         </>
     );

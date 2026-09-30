@@ -5,7 +5,7 @@ import { OllamaAdapter } from '@agent-office/adapters';
 import { ToolExecutor } from '../tools/ToolExecutor';
 import { MemoryStore } from '../memory/MemoryStore';
 import { AGENT_MODEL, OLLAMA_URL } from '../config';
-import { TEAM } from '../team';
+import { DEFAULT_AGENT_ID, TEAM } from '../team';
 
 const BREAK_MS = 60_000;
 const JOBS_BEFORE_BREAK = 4;
@@ -50,10 +50,7 @@ export class OfficeRoom extends Room<OfficeState> {
 
     // Furniture interaction points: named locations agents can walk to
     private furnitureTargets: Record<string, { x: number; y: number; type: string }> = {
-        'killjoy-desk': { x: 5, y: 18, type: 'desk' },
-        'raze-desk': { x: 5, y: 23, type: 'desk' },
-        'clove-desk': { x: 5, y: 28, type: 'desk' },
-        'jett-desk': { x: 11, y: 18, type: 'desk' },
+        'cypher-desk': { x: 5, y: 18, type: 'desk' },
         'meeting-table': { x: 10, y: 5, type: 'table' },
         'coffee-machine': { x: 25, y: 25, type: 'appliance' },
         'whiteboard': { x: 17, y: 3, type: 'board' },
@@ -223,12 +220,10 @@ export class OfficeRoom extends Room<OfficeState> {
                     workHours: { start: '09:00', end: '17:00' },
                     breakFrequency: 120
                 },
+                // The team was reset to a single operations agent, so hiring is left out on purpose.
                 capabilities: [
-                    { name: 'code_execute', description: 'Execute JavaScript code' },
                     { name: 'web_search', description: 'Search the web for information' },
                     { name: 'write_note', description: 'Write a note or memo' },
-                    { name: 'create_task', description: 'Create a task and assign it to yourself or another agent' },
-                    { name: 'hire_agent', description: 'Hire a new team member (intern, developer, designer). Params: { name: string, role: string }' }
                 ],
                 memory: { shortTermLimit: 50 }
             });
@@ -327,7 +322,7 @@ export class OfficeRoom extends Room<OfficeState> {
         for (const [id, agent] of this.coreAgents) {
             if (!agent.currentTask) return id;
         }
-        return 'killjoy'; // fallback
+        return DEFAULT_AGENT_ID;
     }
 
     async update(delta: number) {
