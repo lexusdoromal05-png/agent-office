@@ -57,7 +57,7 @@ export function ChatPanel() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && send()}
-                style={{ width: '100%', padding: '10px', boxSizing: 'border-box', background: '#2d1f3a', color: 'white', border: '1px solid #6b3fa0', borderRadius: 6, outline: 'none' }}
+                style={{ width: '100%', padding: '10px', boxSizing: 'border-box', background: '#7a5a93', color: 'white', border: '1px solid #c9a7eb', borderRadius: 6, outline: 'none' }}
             />
         </div>
         </FloatingPanel>

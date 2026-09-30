@@ -50,10 +50,10 @@ export class OfficeRoom extends Room<OfficeState> {
 
     // Furniture interaction points: named locations agents can walk to
     private furnitureTargets: Record<string, { x: number; y: number; type: string }> = {
-        'cypher-desk': { x: 5, y: 18, type: 'desk' },
-        'vampire-desk': { x: 5, y: 23, type: 'desk' },
-        'mummy-desk': { x: 5, y: 28, type: 'desk' },
-        'pumpkin-desk': { x: 11, y: 18, type: 'desk' },
+        'killjoy-desk': { x: 5, y: 18, type: 'desk' },
+        'raze-desk': { x: 5, y: 23, type: 'desk' },
+        'clove-desk': { x: 5, y: 28, type: 'desk' },
+        'jett-desk': { x: 11, y: 18, type: 'desk' },
         'meeting-table': { x: 10, y: 5, type: 'table' },
         'coffee-machine': { x: 25, y: 25, type: 'appliance' },
         'whiteboard': { x: 17, y: 3, type: 'board' },
@@ -99,6 +99,31 @@ export class OfficeRoom extends Room<OfficeState> {
     private meetingActive = false;
     private breakUntil: Map<string, number> = new Map();
     private jobsSinceBreak: Map<string, number> = new Map();
+
+    // What each agent did today, used to answer the user's questions in meetings.
+    private activity: Map<string, Array<{ time: string; text: string }>> = new Map();
+
+    // Set by the server: answers the user's meeting questions (one reply per agent).
+    static meetingResponder: ((question: string) => Promise<unknown>) | null = null;
+
+    logActivity(agentId: string, text: string) {
+        const today = new Date().toDateString();
+        const entries = (this.activity.get(agentId) || []).filter((e) => new Date(e.time).toDateString() === today);
+        entries.push({ time: new Date().toISOString(), text: text.slice(0, 300) });
+        this.activity.set(agentId, entries.slice(-30));
+    }
+
+    todaysActivity(agentId: string): Array<{ time: string; text: string }> {
+        const today = new Date().toDateString();
+        return (this.activity.get(agentId) || []).filter((e) => new Date(e.time).toDateString() === today);
+    }
+
+    agentSays(agentId: string, text: string) {
+        const agent = this.state.agents.get(agentId);
+        if (!agent) return;
+        agent.thought = text.length > 36 ? `${text.slice(0, 35)}…` : text;
+        this.broadcast('chat', { sender: agent.name, text: `💬 ${text}` });
+    }
 
     isMeetingActive(): boolean {
         return this.meetingActive;
@@ -164,6 +189,7 @@ export class OfficeRoom extends Room<OfficeState> {
         coreAgent.currentTask = task;
         agentState.currentTask = task;
         agentState.action = 'work';
+        this.logActivity(agentId, `Started: ${task}`);
         this.broadcast('chat', { sender: coreAgent.config.name, text: announcement });
     }
 
@@ -172,6 +198,7 @@ export class OfficeRoom extends Room<OfficeState> {
         const agentState = this.state.agents.get(agentId);
         if (!coreAgent || !agentState) return;
         this.busyAgents.delete(agentId);
+        this.logActivity(agentId, `Finished "${coreAgent.currentTask}": ${announcement}`);
         coreAgent.currentTask = '';
         agentState.currentTask = '';
         this.broadcast('chat', { sender: coreAgent.config.name, text: announcement });
@@ -261,6 +288,10 @@ export class OfficeRoom extends Room<OfficeState> {
         this.onMessage('chat', (client, message) => {
             console.log(`Chat from ${client.sessionId}: ${message.text}`);
             this.broadcast('chat', { sender: 'User', text: message.text });
+            const text = String(message?.text || '').trim();
+            if (this.meetingActive && text && OfficeRoom.meetingResponder) {
+                OfficeRoom.meetingResponder(text).catch((e) => console.error('Meeting reply failed:', e));
+            }
         });
 
         this.onMessage('start-scenario', (client, message) => {
@@ -291,6 +322,7 @@ export class OfficeRoom extends Room<OfficeState> {
 
                 // Persist task
                 this.memoryStore.createTask(title, targetId);
+                this.logActivity(targetId, `Assigned task: ${title}`);
 
                 this.broadcast('chat', {
                     sender: 'System',
@@ -365,11 +397,9 @@ export class OfficeRoom extends Room<OfficeState> {
                     if (this.busyAgents.has(id) && (decision.action === 'workout' || decision.action === 'break')) {
                         decision.action = 'work';
                     }
+                    // In a meeting agents only speak when the user asks them something.
                     if (this.meetingActive) {
                         if (decision.thought) agentState.thought = decision.thought;
-                        if (decision.action === 'talk' && decision.message) {
-                            this.broadcast('chat', { sender: coreAgent.config.name, text: `💬 ${decision.message}` });
-                        }
                         coreAgent.clearInbox();
                         setTimeout(() => this.thinkingLocks.set(id, false), 15000);
                         return;
@@ -553,6 +583,7 @@ export class OfficeRoom extends Room<OfficeState> {
                                 decision.toolCall.params
                             );
 
+                            this.logActivity(id, `Used ${decision.toolCall.name}: ${(result.success ? result.output : result.error || '').slice(0, 150)}`);
                             this.broadcast('chat', {
                                 sender: coreAgent.config.name,
                                 text: `🔧 Used tool [${decision.toolCall.name}]: ${result.success ? result.output.slice(0, 100) : result.error}`

@@ -1,13 +1,14 @@
+export type Costume = 'witch' | 'vampire' | 'mummy' | 'pumpkin';
+
 export interface TeamMember {
     name: string;
     role: string;
     job: string;
-    costume: 'witch' | 'vampire' | 'mummy' | 'pumpkin';
+    costume: Costume;
     spawn: { x: number; y: number };
 }
 
-// Everyone gets a random name from this list each time the server starts.
-export const AGENT_NAMES = ['Lexus', 'Sia', 'Mini-Vambby', 'Alon'];
+export const COSTUMES: Costume[] = ['witch', 'vampire', 'mummy', 'pumpkin'];
 
 export function shuffle<T>(items: T[], random: () => number = Math.random): T[] {
     const out = [...items];
@@ -18,40 +19,41 @@ export function shuffle<T>(items: T[], random: () => number = Math.random): T[] 
     return out;
 }
 
-const names = shuffle(AGENT_NAMES);
+// Each server start hands out the Halloween costumes at random.
+const costumes = shuffle(COSTUMES);
 
-// IDs stay fixed so memories and desks survive the name shuffle.
+// IDs keep the original agent names so memories and desks carry over.
 export const TEAM: Record<string, TeamMember> = {
-    cypher: {
-        name: names[0],
+    killjoy: {
+        name: 'Mini-Vambby',
         role: 'Chief of Staff (Operations Intelligence)',
         job: "You sweep the user's connected work systems (Slack, WhatsApp, Gmail, Jira, Calendar, Drive, Notion, Discord), reconcile what each source says into one operational picture, and brief the user on what needs them. You never send or change anything without the user's approval.",
-        costume: 'witch',
+        costume: costumes[0],
         spawn: { x: 10, y: 10 },
     },
-    vampire: {
-        name: names[1],
-        role: 'Deadline Watcher',
-        job: 'You keep an eye on upcoming deadlines around the office and remind teammates about them. It is Halloween and you are dressed as a vampire.',
-        costume: 'vampire',
+    jett: {
+        name: 'Lexus',
+        role: 'Community Manager',
+        job: "You look after the user's community: announcements, reminders, welcome posts, and member questions.",
+        costume: costumes[1],
+        spawn: { x: 18, y: 10 },
+    },
+    raze: {
+        name: 'Alon',
+        role: 'Outreach Writer',
+        job: 'You handle outreach: screening leads and drafting warm connection notes and replies.',
+        costume: costumes[2],
         spawn: { x: 20, y: 15 },
     },
-    mummy: {
-        name: names[2],
-        role: 'Meeting Prepper',
-        job: 'You help teammates get ready for meetings and keep notes tidy. It is Halloween and you are wrapped up as a mummy.',
-        costume: 'mummy',
+    clove: {
+        name: 'Gideon',
+        role: 'Engagement Writer',
+        job: "You draft thoughtful comments on other people's posts and warm replies to comments on the user's posts.",
+        costume: costumes[3],
         spawn: { x: 15, y: 12 },
-    },
-    pumpkin: {
-        name: names[3],
-        role: 'Office Morale Lead',
-        job: 'You keep the office spirits up and check in on teammates. It is Halloween and you are dressed as a jack-o\'-lantern.',
-        costume: 'pumpkin',
-        spawn: { x: 18, y: 10 },
     },
 };
 
 // The agent that runs the connector sweeps and briefs.
-export const DEFAULT_AGENT_ID = 'cypher';
+export const DEFAULT_AGENT_ID = 'killjoy';
 export const OPS_AGENT_NAME = TEAM[DEFAULT_AGENT_ID].name;

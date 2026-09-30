@@ -45,9 +45,11 @@ https://github.com/user-attachments/assets/da76e31d-ff34-4ce1-9092-5bf9e6ee2058
 
 ## 🛰️ Cypher — Connector-First Operations Agent
 
-🎃 **Halloween edition:** the office is decorated (jack-o'-lanterns, cobwebs, candles, bats, a ghost) and four agents work in costume — witch, vampire, mummy, and pumpkin. Each server start gives them a random name from Lexus, Sia, Mini-Vambby, and Alon (edit `AGENT_NAMES` in `packages/server/src/team.ts`). The witch runs the operations work described below; the other three are office companions.
+🎃 **Halloween edition:** the pink pastel office is decorated with pumpkins, cobwebs, bat bunting, candles, spiders, candy, and a friendly ghost. The team is Mini-Vambby (operations), Lexus (community), Alon (outreach), and Gideon (engagement), and each server start hands out the witch, vampire, mummy, and pumpkin costumes at random.
 
-The operations agent (called **Cypher** below) is a chief-of-staff agent that reads your connected work systems, reconciles what each one says, and briefs you on what needs you. It lives at its desk in the office and in the **🛰️ Command Center** panel.
+**Team meetings:** open the 🎃 Team Meeting panel, press **Call meeting**, then use the buttons (updates, blockers, what's next, anything urgent) or type any question. Each agent answers from what they actually did today; name someone ("Alon, how is outreach going?") and only they answer. Anything you type in Office Chat during a meeting gets answered the same way.
+
+The operations agent, Mini-Vambby (called **Cypher** below), is a chief-of-staff agent that reads your connected work systems, reconciles what each one says, and briefs you on what needs you. It lives at its desk in the office and in the **🛰️ Command Center** panel.
 
 | Command | What Cypher does |
 |---------|------------------|

@@ -97,7 +97,7 @@ export function LayoutEditor() {
                 style={{
                     position: 'absolute', left: 20, bottom: 80,
                     padding: '8px 16px', borderRadius: 8, border: 'none',
-                    backgroundColor: '#e2530f', color: 'white',
+                    backgroundColor: '#e58fb6', color: 'white',
                     cursor: 'pointer', fontSize: '12px', fontWeight: 'bold',
                     boxShadow: '0 4px 12px rgba(108,92,231,0.4)',
                     zIndex: 10
@@ -111,10 +111,10 @@ export function LayoutEditor() {
     return (
         <div style={{
             position: 'absolute', left: 20, bottom: 20, width: 280,
-            backgroundColor: 'rgba(26,14,34,0.95)', color: 'white',
+            backgroundColor: 'rgba(92,62,112,0.95)', color: 'white',
             padding: 16, borderRadius: 12,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            border: '1px solid rgba(255,122,26,0.5)',
+            border: '1px solid rgba(247,168,196,0.5)',
             maxHeight: '40vh', display: 'flex', flexDirection: 'column',
             zIndex: 20
         }}>
@@ -136,7 +136,7 @@ export function LayoutEditor() {
                         onClick={() => setSelected(f.type)}
                         style={{
                             padding: '4px 8px', borderRadius: 6, border: 'none',
-                            backgroundColor: selected === f.type ? '#e2530f' : '#2d1f3a',
+                            backgroundColor: selected === f.type ? '#e58fb6' : '#7a5a93',
                             color: 'white', cursor: 'pointer', fontSize: '11px'
                         }}
                     >
@@ -156,7 +156,7 @@ export function LayoutEditor() {
             {/* Item List */}
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '11px', marginBottom: 8 }}>
                 {items.length === 0 && (
-                    <p style={{ color: '#d9c7e6', fontStyle: 'italic', margin: 0 }}>
+                    <p style={{ color: '#e6d6f0', fontStyle: 'italic', margin: 0 }}>
                         Select furniture type and click Add to place items.
                     </p>
                 )}
@@ -183,7 +183,7 @@ export function LayoutEditor() {
 
             <button onClick={saveLayout} style={{
                 padding: '8px', borderRadius: 6, border: 'none',
-                backgroundColor: '#e2530f', color: 'white', cursor: 'pointer',
+                backgroundColor: '#e58fb6', color: 'white', cursor: 'pointer',
                 fontSize: '12px', fontWeight: 'bold'
             }}>
                 💾 Save Layout

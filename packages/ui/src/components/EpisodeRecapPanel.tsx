@@ -69,13 +69,13 @@ export function EpisodeRecapPanel() {
                     <div style={{ fontSize: 11, marginBottom: 6 }}>
                         Active alliances/rivalries: <strong>{recap.outcomeCard.activeRelationships}</strong>
                     </div>
-                    <div style={{ fontSize: 11, marginBottom: 4, color: '#b58be0' }}>Top Highlights</div>
+                    <div style={{ fontSize: 11, marginBottom: 4, color: '#cdb4db' }}>Top Highlights</div>
                     {recap.topHighlights.slice(0, 3).map((h, i) => (
                         <div key={i} style={{ fontSize: 10, marginBottom: 5, color: '#efe1ff' }}>
                             • {h.title}
                         </div>
                     ))}
-                    <div style={{ fontSize: 11, marginTop: 6, marginBottom: 4, color: '#b58be0' }}>Leaderboard</div>
+                    <div style={{ fontSize: 11, marginTop: 6, marginBottom: 4, color: '#cdb4db' }}>Leaderboard</div>
                     {recap.leaderboard.slice(0, 3).map((a, i) => (
                         <div key={i} style={{ fontSize: 10, marginBottom: 4, color: '#efe1ff' }}>
                             {i + 1}. {a.name} ({Math.round(a.impact * 100)} impact)

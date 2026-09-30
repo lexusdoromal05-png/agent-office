@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 
 export const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box', padding: '7px 9px', borderRadius: 7,
-    border: '1px solid #6b3fa0', backgroundColor: '#2d1f3a', color: 'white', fontSize: 11,
+    border: '1px solid #c9a7eb', backgroundColor: '#7a5a93', color: 'white', fontSize: 11,
     fontFamily: 'inherit',
 };
 
 export const primaryButton: React.CSSProperties = {
     border: 'none', borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
-    backgroundColor: '#e2530f', color: 'white', fontWeight: 700, fontSize: 11,
+    backgroundColor: '#e58fb6', color: 'white', fontWeight: 700, fontSize: 11,
 };
 
 export const smallButton: React.CSSProperties = {
@@ -17,11 +17,11 @@ export const smallButton: React.CSSProperties = {
 };
 
 export const cardStyle: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,122,26,0.35)',
+    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(247,168,196,0.35)',
     borderRadius: 10, padding: 10, marginBottom: 8,
 };
 
-export const labelStyle: React.CSSProperties = { fontSize: 10, color: '#ffb347', fontWeight: 700, marginTop: 6, marginBottom: 2 };
+export const labelStyle: React.CSSProperties = { fontSize: 10, color: '#f7c6dc', fontWeight: 700, marginTop: 6, marginBottom: 2 };
 
 export async function api<T>(url: string, init?: RequestInit): Promise<T> {
     const response = await fetch(url, {

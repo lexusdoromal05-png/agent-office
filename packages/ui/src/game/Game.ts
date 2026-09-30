@@ -55,57 +55,76 @@ export class OfficeScene extends Phaser.Scene {
         super('OfficeScene');
     }
 
+    // Cute pastel Halloween: pumpkins, cobwebs, bat bunting, candy corn, ghosts, and candles.
     private drawHalloweenDecor() {
         const deco = (x: number, y: number, emoji: string, size = 16, depth = 2) =>
             this.add.text(x, y, emoji, { fontSize: `${size}px` }).setOrigin(0.5).setDepth(depth);
+        const g = this.add.graphics().setDepth(1);
 
-        // Cobwebs in the corners
-        deco(22, 22, '🕸️', 26);
-        deco(this.gridSize - 22, 22, '🕸️', 26).setFlipX(true);
-        deco(22, this.gridSize - 22, '🕸️', 22).setFlipY(true);
-        deco(this.gridSize - 22, this.gridSize - 22, '🕸️', 22);
+        // Pastel cobwebs drawn in every corner
+        const web = (cx: number, cy: number, dx: number, dy: number) => {
+            g.lineStyle(1, 0xb9a3cf, 0.8);
+            for (let a = 0; a <= 4; a++) {
+                const t = (a / 4) * (Math.PI / 2);
+                g.lineBetween(cx, cy, cx + dx * Math.cos(t) * 56, cy + dy * Math.sin(t) * 56);
+            }
+            for (let r = 14; r <= 56; r += 14) {
+                g.beginPath();
+                for (let a = 0; a <= 4; a++) {
+                    const t = (a / 4) * (Math.PI / 2);
+                    const x = cx + dx * Math.cos(t) * r;
+                    const y = cy + dy * Math.sin(t) * r;
+                    if (a === 0) g.moveTo(x, y); else g.lineTo(x, y);
+                }
+                g.strokePath();
+            }
+        };
+        const n = this.gridSize;
+        web(0, 0, 1, 1); web(n, 0, -1, 1); web(0, n, 1, -1); web(n, n, -1, -1);
 
-        // Flickering jack-o'-lanterns
-        const lanterns = [[40, 200], [130, 200], [260, 200], [520, 360], [40, 470], [560, 185], [300, 560], [470, 560]];
-        lanterns.forEach(([x, y], i) => {
-            const glow = this.add.circle(x, y, 14, 0xff8c2e, 0.25).setDepth(1);
-            const lantern = deco(x, y, '🎃', 18);
-            this.tweens.add({ targets: [glow], alpha: 0.05, scale: 1.3, duration: 260 + i * 37, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-            this.tweens.add({ targets: lantern, angle: { from: -4, to: 4 }, duration: 900 + i * 50, yoyo: true, repeat: -1 });
+        // Bat bunting strung along the top wall
+        g.lineStyle(1, 0x9a7bb5, 0.9);
+        for (let x = 70; x < n - 70; x += 60) {
+            g.lineBetween(x, 6, x + 30, 16);
+            g.lineBetween(x + 30, 16, x + 60, 6);
+            const bat = deco(x + 30, 20, '🦇', 11, 3);
+            this.tweens.add({ targets: bat, angle: { from: -10, to: 10 }, duration: 700 + (x % 5) * 90, yoyo: true, repeat: -1 });
+        }
+
+        // Pumpkins with a soft glow, gently wobbling
+        [[40, 200], [130, 200], [260, 200], [520, 360], [40, 470], [560, 185], [300, 560], [470, 560], [610, 470]].forEach(([x, y], i) => {
+            const glow = this.add.circle(x, y, 13, 0xf9dc7a, 0.35).setDepth(1);
+            const pumpkin = deco(x, y, '🎃', 18);
+            this.tweens.add({ targets: glow, alpha: 0.1, scale: 1.3, duration: 500 + i * 41, yoyo: true, repeat: -1 });
+            this.tweens.add({ targets: pumpkin, angle: { from: -5, to: 5 }, duration: 1000 + i * 60, yoyo: true, repeat: -1 });
         });
 
-        // Candles on the meeting table and desks
-        [[140, 70], [180, 70], [100, 250], [100, 330], [100, 410], [188, 250]].forEach(([x, y], i) => {
+        // Candy corn, candles, and a candy bowl
+        [[150, 60], [185, 60], [100, 250], [100, 330], [100, 410], [188, 250]].forEach(([x, y], i) => {
             const candle = deco(x, y, '🕯️', 11, 4);
-            this.tweens.add({ targets: candle, alpha: 0.6, duration: 180 + i * 23, yoyo: true, repeat: -1 });
+            this.tweens.add({ targets: candle, alpha: 0.65, duration: 220 + i * 29, yoyo: true, repeat: -1 });
         });
+        deco(438, 395, '🍬', 12, 4); deco(452, 398, '🍭', 12, 4); deco(424, 398, '🍫', 11, 4);
 
-        // Gravestones and a cauldron in the lounge
-        deco(470, 110, '🪦', 18); deco(500, 120, '🪦', 16); deco(440, 125, '🪦', 14);
-        const cauldron = deco(610, 300, '🫕', 20);
-        const bubbles = deco(610, 285, '🟢', 6, 3);
-        this.tweens.add({ targets: bubbles, y: 270, alpha: 0, duration: 1400, repeat: -1 });
-        this.tweens.add({ targets: cauldron, scaleX: 1.05, duration: 700, yoyo: true, repeat: -1 });
+        // Spooky-cute lounge corner: tombstones and a witch hat
+        deco(470, 110, '🪦', 18); deco(500, 120, '🪦', 15); deco(530, 150, '🧙', 16);
 
         // Hanging spiders bobbing on their threads
         [120, 330, 590].forEach((x, i) => {
-            const thread = this.add.line(0, 0, x, 0, x, 40, 0xd9c7e6, 0.6).setOrigin(0).setDepth(5);
+            const thread = this.add.line(0, 0, x, 0, x, 40, 0x9a7bb5, 0.7).setOrigin(0).setDepth(5);
             const spider = deco(x, 40, '🕷️', 12, 5);
             this.tweens.add({ targets: spider, y: 70, duration: 1800 + i * 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             this.tweens.add({ targets: thread, scaleY: 1.75, duration: 1800 + i * 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         });
 
-        // Bats and a ghost drifting across the office
-        for (let i = 0; i < 5; i++) {
-            const bat = deco(-30, 60 + i * 110, '🦇', 14, 60);
-            this.tweens.add({
-                targets: bat, x: this.gridSize + 30, y: `+=${(i % 2 ? -1 : 1) * 40}`,
-                duration: 9000 + i * 1700, delay: i * 2300, repeat: -1, ease: 'Sine.easeInOut',
-            });
+        // Bats flapping across the office and a friendly ghost
+        for (let i = 0; i < 4; i++) {
+            const bat = deco(-30, 90 + i * 130, '🦇', 14, 60);
+            this.tweens.add({ targets: bat, x: n + 30, y: `+=${(i % 2 ? -1 : 1) * 40}`, duration: 10000 + i * 1800, delay: i * 2500, repeat: -1, ease: 'Sine.easeInOut' });
         }
-        const ghost = deco(this.gridSize + 40, 330, '👻', 22, 60).setAlpha(0.7);
-        this.tweens.add({ targets: ghost, x: -40, duration: 16000, repeat: -1, delay: 4000 });
-        this.tweens.add({ targets: ghost, y: 300, alpha: 0.35, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        const ghost = deco(n + 40, 330, '👻', 22, 60).setAlpha(0.8);
+        this.tweens.add({ targets: ghost, x: -40, duration: 17000, repeat: -1, delay: 4000 });
+        this.tweens.add({ targets: ghost, y: 300, alpha: 0.45, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     }
 
     preload() {
@@ -120,7 +139,7 @@ export class OfficeScene extends Phaser.Scene {
     create() {
         try {
             console.log("Phaser create() started");
-            this.statusText = this.add.text(10, 10, 'Colyseus Sync: Connecting...', { color: '#ffffaa', fontSize: '14px', backgroundColor: '#140c1acc', padding: { x: 6, y: 3 } });
+            this.statusText = this.add.text(10, 10, 'Colyseus Sync: Connecting...', { color: '#ffffaa', fontSize: '14px', backgroundColor: '#7d6b91cc', padding: { x: 6, y: 3 } });
             this.statusText.setScrollFactor(0);
             this.statusText.setDepth(100);
 
@@ -145,25 +164,25 @@ export class OfficeScene extends Phaser.Scene {
             // ═══════════════════════════════════════════
 
             // Main office floor (warm grey carpet)
-            g.fillStyle(0x2a1a33, 1);
+            g.fillStyle(0xfbd9e7, 1);
             g.fillRect(0, 0, gridSize, gridSize);
 
             // Work area floor (slightly lighter)
-            g.fillStyle(0x33203f, 1);
+            g.fillStyle(0xfff0f6, 1);
             g.fillRect(16, 16, gridSize - 32, gridSize - 32);
 
             // Meeting room carpet (purple-tinted)
-            g.fillStyle(0x352447, 1);
+            g.fillStyle(0xece0fa, 1);
             g.fillRect(32, 32, 200, 160);
 
             // Collab area carpet (warm orange-tinted)
-            g.fillStyle(0x4a3520, 1);
+            g.fillStyle(0xfff4c7, 1);
             g.fillRect(280, 32, 200, 160);
 
             // Coffee area tiles (subtle checkerboard)
             for (let tx = 0; tx < 11; tx++) {
                 for (let ty = 0; ty < 11; ty++) {
-                    g.fillStyle((tx + ty) % 2 === 0 ? 0x3b2c1f : 0x2e2040, 1);
+                    g.fillStyle((tx + ty) % 2 === 0 ? 0xfff8d9 : 0xf5ebff, 1);
                     g.fillRect(350 + tx * 16, 350 + ty * 16, 16, 16);
                 }
             }
@@ -173,43 +192,43 @@ export class OfficeScene extends Phaser.Scene {
             // ═══════════════════════════════════════════
 
             // Meeting room walls
-            g.lineStyle(3, 0x6b3fa0, 0.9);
+            g.lineStyle(3, 0xc3a6ee, 0.9);
             g.strokeRect(32, 32, 200, 160);
             // Door gap (bottom-right of meeting room)
-            g.fillStyle(0x33203f, 1);
+            g.fillStyle(0xfff0f6, 1);
             g.fillRect(192, 188, 40, 6);
 
             // Collab area walls
-            g.lineStyle(3, 0xff7a1a, 0.9);
+            g.lineStyle(3, 0xf7a8c4, 0.9);
             g.strokeRect(280, 32, 200, 160);
             // Door gap
-            g.fillStyle(0x33203f, 1);
+            g.fillStyle(0xfff0f6, 1);
             g.fillRect(280, 160, 40, 6);
 
             // Coffee area border
-            g.lineStyle(2, 0xf2a007, 0.7);
+            g.lineStyle(2, 0xf5d76e, 0.7);
             g.strokeRect(350, 350, 176, 176);
             // Door gap
-            g.fillStyle(0x33203f, 1);
+            g.fillStyle(0xfff0f6, 1);
             g.fillRect(350, 410, 4, 40);
 
             // Room labels
-            this.add.text(132, 46, '🏢 Meeting Room', { fontSize: '10px', color: '#b58be0' }).setOrigin(0.5);
-            this.add.text(380, 46, '💡 Collab Area', { fontSize: '10px', color: '#ffb627' }).setOrigin(0.5);
-            this.add.text(438, 364, '☕ Coffee & Pantry', { fontSize: '10px', color: '#ff8c2e' }).setOrigin(0.5);
+            this.add.text(132, 46, '🏢 Meeting Room', { fontSize: '10px', color: '#9b6fc8' }).setOrigin(0.5);
+            this.add.text(380, 46, '💡 Collab Area', { fontSize: '10px', color: '#c99a1e' }).setOrigin(0.5);
+            this.add.text(438, 364, '☕ Coffee & Pantry', { fontSize: '10px', color: '#d0679a' }).setOrigin(0.5);
 
             // ═══════════════════════════════════════════
             //  MEETING ROOM FURNITURE
             // ═══════════════════════════════════════════
 
             // Large meeting table
-            g.fillStyle(0xc85a12, 1);
+            g.fillStyle(0xf9c9dc, 1);
             g.fillRect(72, 80, 120, 60);
-            g.fillStyle(0x3a2342, 1);
+            g.fillStyle(0xfddbe8, 1);
             g.fillRect(76, 84, 112, 52); // table top highlight
 
             // Chairs around meeting table (pixel circles)
-            const chairColor = 0x3f2656;
+            const chairColor = 0xd7c2f2;
             const chairs = [[92, 72], [132, 72], [172, 72], // top row
             [92, 148], [132, 148], [172, 148], // bottom row
             [64, 100], [64, 128], // left
@@ -217,21 +236,21 @@ export class OfficeScene extends Phaser.Scene {
             chairs.forEach(([cx, cy]) => {
                 g.fillStyle(chairColor, 1);
                 g.fillCircle(cx, cy, 6);
-                g.fillStyle(0x302142, 1);
+                g.fillStyle(0xe8dbfa, 1);
                 g.fillCircle(cx, cy, 4);
             });
 
             // Whiteboard on meeting room wall
-            g.fillStyle(0x3d2a4a, 1);
+            g.fillStyle(0xfffafc, 1);
             g.fillRect(48, 36, 60, 30);
-            g.lineStyle(2, 0x4b2d63, 1);
+            g.lineStyle(2, 0xb9a3cf, 1);
             g.strokeRect(48, 36, 60, 30);
             // Whiteboard scribbles
-            g.lineStyle(1, 0x2b7f6b, 0.6);
+            g.lineStyle(1, 0x9cc9f5, 0.6);
             g.beginPath();
             g.moveTo(54, 46); g.lineTo(70, 42); g.lineTo(85, 50); g.lineTo(100, 44);
             g.strokePath();
-            g.lineStyle(1, 0xe2530f, 0.6);
+            g.lineStyle(1, 0xf28bb0, 0.6);
             g.beginPath();
             g.moveTo(54, 54); g.lineTo(75, 58); g.lineTo(95, 52);
             g.strokePath();
@@ -241,34 +260,34 @@ export class OfficeScene extends Phaser.Scene {
             // ═══════════════════════════════════════════
 
             // Standing desks (2 side by side)
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(300, 70, 48, 28);
-            g.fillStyle(0x3f2547, 1);
+            g.fillStyle(0xfcd3e3, 1);
             g.fillRect(302, 72, 44, 24);
 
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(410, 70, 48, 28);
-            g.fillStyle(0x3f2547, 1);
+            g.fillStyle(0xfcd3e3, 1);
             g.fillRect(412, 72, 44, 24);
 
             // Laptops on standing desks
             const drawLaptop = (lx: number, ly: number) => {
-                g.fillStyle(0x4b2d63, 1);
+                g.fillStyle(0xb9a3cf, 1);
                 g.fillRect(lx, ly, 16, 10); // screen
-                g.fillStyle(0x140c1a, 1);
+                g.fillStyle(0x7d6b91, 1);
                 g.fillRect(lx + 1, ly + 1, 14, 8);
-                g.fillStyle(0x4b2d63, 1);
+                g.fillStyle(0xb9a3cf, 1);
                 g.fillRect(lx - 1, ly + 10, 18, 3); // keyboard
             };
             drawLaptop(312, 76);
             drawLaptop(424, 76);
 
             // Bean bags / lounge chairs in collab
-            g.fillStyle(0xff7a1a, 0.6);
+            g.fillStyle(0xf7a8c4, 0.6);
             g.fillCircle(320, 150, 14);
-            g.fillStyle(0xffb627, 0.6);
+            g.fillStyle(0xf9dc7a, 0.6);
             g.fillCircle(370, 155, 14);
-            g.fillStyle(0x6b3fa0, 0.6);
+            g.fillStyle(0xc3a6ee, 0.6);
             g.fillCircle(430, 148, 14);
 
             // ═══════════════════════════════════════════
@@ -277,32 +296,32 @@ export class OfficeScene extends Phaser.Scene {
 
             const drawWorkstation = (x: number, y: number, label: string, occupied: boolean) => {
                 // Desk surface
-                g.fillStyle(0xa6440f, 1);
+                g.fillStyle(0xefb3cc, 1);
                 g.fillRect(x, y, 56, 28);
-                g.fillStyle(0xc85a12, 1);
+                g.fillStyle(0xf9c9dc, 1);
                 g.fillRect(x + 2, y + 2, 52, 24);
 
                 // Monitor
-                g.fillStyle(0x140c1a, 1);
+                g.fillStyle(0x7d6b91, 1);
                 g.fillRect(x + 6, y + 3, 22, 14); // bezel
-                g.fillStyle(occupied ? 0x3ba88f : 0x140c1a, 1);
+                g.fillStyle(occupied ? 0xbfe0ff : 0x7d6b91, 1);
                 g.fillRect(x + 8, y + 5, 18, 10); // screen glow
-                g.fillStyle(0x4b2d63, 1);
+                g.fillStyle(0xb9a3cf, 1);
                 g.fillRect(x + 14, y + 17, 10, 3); // stand
                 g.fillRect(x + 10, y + 20, 18, 2); // base
 
                 // Keyboard
-                g.fillStyle(0x5a3a70, 1);
+                g.fillStyle(0xe6d6f0, 1);
                 g.fillRect(x + 6, y + 22, 18, 4);
 
                 // Mouse
-                g.fillStyle(0x5a3a70, 1);
+                g.fillStyle(0xe6d6f0, 1);
                 g.fillRect(x + 28, y + 22, 5, 4);
 
                 // Notepad
-                g.fillStyle(0x5a3f1f, 1);
+                g.fillStyle(0xfff3b8, 1);
                 g.fillRect(x + 36, y + 6, 12, 16);
-                g.lineStyle(1, 0xffb627, 0.8);
+                g.lineStyle(1, 0xf9dc7a, 0.8);
                 g.beginPath();
                 g.moveTo(x + 38, y + 10); g.lineTo(x + 46, y + 10);
                 g.moveTo(x + 38, y + 14); g.lineTo(x + 46, y + 14);
@@ -310,33 +329,30 @@ export class OfficeScene extends Phaser.Scene {
                 g.strokePath();
 
                 // Pen
-                g.fillStyle(0x2b7f6b, 1);
+                g.fillStyle(0x9cc9f5, 1);
                 g.fillRect(x + 50, y + 8, 2, 12);
 
                 // Coffee mug
-                g.fillStyle(0xe2530f, 1);
+                g.fillStyle(0xf28bb0, 1);
                 g.fillCircle(x + 37, y + 24, 3);
-                g.fillStyle(0x140c1a, 1);
+                g.fillStyle(0x7d6b91, 1);
                 g.fillCircle(x + 37, y + 24, 1.5);
 
                 // Office chair (below desk)
-                g.fillStyle(0x140c1a, 1);
+                g.fillStyle(0x7d6b91, 1);
                 g.fillCircle(x + 22, y + 38, 8);
-                g.fillStyle(occupied ? 0x6b3fa0 : 0x3f2656, 1);
+                g.fillStyle(occupied ? 0xc3a6ee : 0xd7c2f2, 1);
                 g.fillCircle(x + 22, y + 38, 6);
 
                 // Label
-                this.add.text(x + 28, y - 6, label, { fontSize: '8px', color: '#b58be0' }).setOrigin(0.5);
+                this.add.text(x + 28, y - 6, label, { fontSize: '8px', color: '#9a7bb5' }).setOrigin(0.5);
             };
 
-            drawWorkstation(64, 240, '🧙 Witch\'s Desk', true);
-            drawWorkstation(64, 320, '🧛 Vampire\'s Desk', true);
-            drawWorkstation(64, 400, '🧟 Mummy\'s Desk', true);
-            drawWorkstation(152, 240, '🎃 Pumpkin\'s Desk', true);
+            drawWorkstation(64, 240, '💻 Mini-Vambby\'s Desk', true);
+            drawWorkstation(64, 320, '💻 Alon\'s Desk', true);
+            drawWorkstation(64, 400, '💻 Gideon\'s Desk', true);
+            drawWorkstation(152, 240, '💻 Lexus\'s Desk', true);
 
-            // ═══════════════════════════════════════════
-            //  HALLOWEEN DECOR
-            // ═══════════════════════════════════════════
             this.drawHalloweenDecor();
 
             // ═══════════════════════════════════════════
@@ -344,53 +360,53 @@ export class OfficeScene extends Phaser.Scene {
             // ═══════════════════════════════════════════
 
             // Counter
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(370, 380, 80, 20);
-            g.fillStyle(0xc85a12, 1);
+            g.fillStyle(0xf9c9dc, 1);
             g.fillRect(372, 382, 76, 16);
 
             // Coffee machine
-            g.fillStyle(0x140c1a, 1);
+            g.fillStyle(0x7d6b91, 1);
             g.fillRect(380, 370, 20, 24);
-            g.fillStyle(0x4b2d63, 1);
+            g.fillStyle(0xb9a3cf, 1);
             g.fillRect(382, 372, 16, 12);
-            g.fillStyle(0xe2530f, 1);
+            g.fillStyle(0xf28bb0, 1);
             g.fillCircle(390, 390, 2); // power light
 
             // Microwave
-            g.fillStyle(0x3d2a4a, 1);
+            g.fillStyle(0xfffafc, 1);
             g.fillRect(410, 372, 20, 16);
-            g.fillStyle(0x140c1a, 1);
+            g.fillStyle(0x7d6b91, 1);
             g.fillRect(412, 374, 12, 12);
-            g.fillStyle(0xf2a007, 1);
+            g.fillStyle(0xf5d76e, 1);
             g.fillRect(427, 376, 2, 2); // light
 
             // Small table with snacks
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(380, 440, 40, 30);
-            g.fillStyle(0xc85a12, 1);
+            g.fillStyle(0xf9c9dc, 1);
             g.fillRect(382, 442, 36, 26);
             // Fruit bowl
-            g.fillStyle(0xffb627, 1);
+            g.fillStyle(0xf9dc7a, 1);
             g.fillCircle(392, 452, 4);
-            g.fillStyle(0xff7a1a, 1);
+            g.fillStyle(0xf7a8c4, 1);
             g.fillCircle(400, 450, 3);
-            g.fillStyle(0xf2a007, 1);
+            g.fillStyle(0xf5d76e, 1);
             g.fillCircle(408, 454, 4);
 
             // Chairs around snack table
-            g.fillStyle(0x3f2656, 1);
+            g.fillStyle(0xd7c2f2, 1);
             g.fillCircle(375, 445, 5);
             g.fillCircle(375, 460, 5);
             g.fillCircle(425, 445, 5);
             g.fillCircle(425, 460, 5);
 
             // Water cooler
-            g.fillStyle(0x3ba88f, 0.6);
+            g.fillStyle(0xbfe0ff, 0.6);
             g.fillRect(470, 380, 12, 24);
-            g.fillStyle(0x3d2a4a, 1);
+            g.fillStyle(0xfffafc, 1);
             g.fillRect(468, 404, 16, 16);
-            g.fillStyle(0x3ba88f, 0.4);
+            g.fillStyle(0xbfe0ff, 0.4);
             g.fillRect(470, 382, 8, 16); // water level
             this.add.text(476, 424, '💧', { fontSize: '8px' }).setOrigin(0.5);
 
@@ -399,63 +415,63 @@ export class OfficeScene extends Phaser.Scene {
             // ═══════════════════════════════════════════
 
             // Soft rubber floor + walls
-            g.fillStyle(0x2b1d3a, 1);
+            g.fillStyle(0xf3e6ff, 1);
             g.fillRect(160, 440, 176, 152);
-            g.lineStyle(3, 0xff7a1a, 0.9);
+            g.lineStyle(3, 0xf7a8c4, 0.9);
             g.strokeRect(160, 440, 176, 152);
-            g.fillStyle(0x33203f, 1);
+            g.fillStyle(0xfff0f6, 1);
             g.fillRect(290, 437, 40, 6); // door gap
-            this.add.text(200, 452, '🏋️ Gym', { fontSize: '10px', color: '#ff8c2e' }).setOrigin(0.5);
+            this.add.text(200, 452, '🏋️ Gym', { fontSize: '10px', color: '#d0679a' }).setOrigin(0.5);
 
             // Treadmill
-            g.fillStyle(0x4b2d63, 1);
+            g.fillStyle(0xb9a3cf, 1);
             g.fillRect(176, 468, 32, 24);
-            g.fillStyle(0x140c1a, 1);
+            g.fillStyle(0x7d6b91, 1);
             g.fillRect(179, 472, 24, 17);
-            g.fillStyle(0xff7a1a, 1);
+            g.fillStyle(0xf7a8c4, 1);
             g.fillRect(205, 464, 6, 30);
-            g.fillStyle(0x3ba88f, 1);
+            g.fillStyle(0xbfe0ff, 1);
             g.fillRect(206, 466, 4, 5); // screen
 
             // Weight bench + dumbbell rack
-            g.fillStyle(0x6b3fa0, 1);
+            g.fillStyle(0xc3a6ee, 1);
             g.fillRect(244, 486, 28, 8);
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(236, 462, 44, 6);
-            const dumbbellColors = [0xff7a1a, 0xffb627, 0x6b3fa0, 0x3ba88f];
+            const dumbbellColors = [0xf7a8c4, 0xf9dc7a, 0xc3a6ee, 0xbfe0ff];
             dumbbellColors.forEach((c, i) => {
                 const dx = 241 + i * 11;
                 g.fillStyle(c, 1);
                 g.fillCircle(dx - 3, 465, 3);
                 g.fillCircle(dx + 3, 465, 3);
-                g.fillStyle(0xb58be0, 1);
+                g.fillStyle(0x9a7bb5, 1);
                 g.fillRect(dx - 2, 464, 4, 2);
             });
 
             // Mirror
-            g.fillStyle(0x243238, 1);
+            g.fillStyle(0xe8f4ff, 1);
             g.fillRect(292, 450, 36, 10);
-            g.lineStyle(1, 0x6b3fa0, 1);
+            g.lineStyle(1, 0xc3a6ee, 1);
             g.strokeRect(292, 450, 36, 10);
 
             // Yoga mats
-            g.fillStyle(0x6b3fa0, 1);
+            g.fillStyle(0xc3a6ee, 1);
             g.fillRect(176, 536, 32, 14);
-            g.fillStyle(0xffb627, 1);
+            g.fillStyle(0xf9dc7a, 1);
             g.fillRect(224, 536, 32, 14);
 
             // Exercise ball
-            g.fillStyle(0xff7a1a, 1);
+            g.fillStyle(0xf7a8c4, 1);
             g.fillCircle(304, 548, 10);
-            g.fillStyle(0x3a2342, 1);
+            g.fillStyle(0xfddbe8, 1);
             g.fillCircle(301, 545, 3);
 
             // Kettlebells
-            g.fillStyle(0xb58be0, 1);
+            g.fillStyle(0x9a7bb5, 1);
             g.fillCircle(290, 580, 4);
-            g.fillStyle(0xe2530f, 1);
+            g.fillStyle(0xf28bb0, 1);
             g.fillCircle(302, 580, 4);
-            g.fillStyle(0xf2a007, 1);
+            g.fillStyle(0xf5d76e, 1);
             g.fillCircle(314, 580, 4);
 
             this.add.text(176, 576, '💖', { fontSize: '8px' }).setOrigin(0.5);
@@ -468,17 +484,17 @@ export class OfficeScene extends Phaser.Scene {
             // Potted plants
             const drawPlant = (px: number, py: number) => {
                 // Pot
-                g.fillStyle(0xff8c2e, 1);
+                g.fillStyle(0xf4a7c3, 1);
                 g.fillRect(px - 5, py, 10, 8);
-                g.fillStyle(0xb34d12, 1);
+                g.fillStyle(0xf8bfd4, 1);
                 g.fillRect(px - 4, py + 1, 8, 6);
                 // Soil
-                g.fillStyle(0x4a2e1f, 1);
+                g.fillStyle(0x9c7a6b, 1);
                 g.fillRect(px - 3, py, 6, 2);
                 // Leaves
-                g.fillStyle(0x4fcf2a, 1);
+                g.fillStyle(0x8fd3a0, 1);
                 g.fillCircle(px, py - 4, 6);
-                g.fillStyle(0x7dff4a, 1);
+                g.fillStyle(0xaee6bb, 1);
                 g.fillCircle(px - 3, py - 6, 4);
                 g.fillCircle(px + 4, py - 5, 4);
             };
@@ -491,14 +507,14 @@ export class OfficeScene extends Phaser.Scene {
             drawPlant(550, 200);  // right side
 
             // Bookshelf on right wall
-            g.fillStyle(0xa6440f, 1);
+            g.fillStyle(0xefb3cc, 1);
             g.fillRect(540, 50, 40, 80);
-            g.fillStyle(0xc85a12, 1);
+            g.fillStyle(0xf9c9dc, 1);
             g.fillRect(542, 52, 36, 18); // shelf 1
             g.fillRect(542, 72, 36, 18); // shelf 2
             g.fillRect(542, 92, 36, 18); // shelf 3
             // Books
-            const bookColors = [0xe2530f, 0x2b7f6b, 0xffb627, 0xf2a007, 0x6b3fa0, 0xff7a1a];
+            const bookColors = [0xf28bb0, 0x9cc9f5, 0xf9dc7a, 0xf5d76e, 0xc3a6ee, 0xf7a8c4];
             for (let b = 0; b < 6; b++) {
                 g.fillStyle(bookColors[b], 1);
                 g.fillRect(544 + b * 5, 54, 4, 14);
@@ -509,24 +525,24 @@ export class OfficeScene extends Phaser.Scene {
             }
 
             // Printer
-            g.fillStyle(0x3d2a4a, 1);
+            g.fillStyle(0xfffafc, 1);
             g.fillRect(540, 140, 30, 18);
-            g.fillStyle(0x5a3a70, 1);
+            g.fillStyle(0xe6d6f0, 1);
             g.fillRect(542, 142, 26, 10);
-            g.fillStyle(0x140c1a, 1);
+            g.fillStyle(0x7d6b91, 1);
             g.fillRect(545, 155, 6, 2); // paper slot
             this.add.text(555, 164, '🖨️', { fontSize: '8px' }).setOrigin(0.5);
 
             // Welcome mat / rug at center
-            g.fillStyle(0x6b3fa0, 0.15);
+            g.fillStyle(0xc3a6ee, 0.15);
             g.fillRect(200, 240, 120, 80);
-            g.lineStyle(1, 0x6b3fa0, 0.3);
+            g.lineStyle(1, 0xc3a6ee, 0.3);
             g.strokeRect(200, 240, 120, 80);
 
             // ═══════════════════════════════════════════
             //  SUBTLE GRID (very faint)
             // ═══════════════════════════════════════════
-            g.lineStyle(1, 0x7a2e0e, 0.12);
+            g.lineStyle(1, 0xd9a6c9, 0.12);
             g.beginPath();
             for (let i = 0; i <= gridSize; i += 16) {
                 g.moveTo(i, 0).lineTo(i, gridSize);
@@ -534,26 +550,26 @@ export class OfficeScene extends Phaser.Scene {
             }
             g.strokePath();
 
-            this.cameras.main.setBackgroundColor('#120a18');
+            this.cameras.main.setBackgroundColor('#f9dcea');
             this.cameras.main.setZoom(2);
             this.cameras.main.centerOn(gridSize / 2, gridSize / 2);
             this.cameras.main.setBounds(0, 0, gridSize, gridSize);
 
             // Meeting room: lights up and shows you at the head of the table during a meeting.
             const meetingGlow = this.add.graphics().setDepth(3).setVisible(false);
-            meetingGlow.fillStyle(0xff7a1a, 0.15);
+            meetingGlow.fillStyle(0xf7a8c4, 0.15);
             meetingGlow.fillRect(32, 32, 200, 160);
-            meetingGlow.lineStyle(3, 0xe2530f, 1);
+            meetingGlow.lineStyle(3, 0xf28bb0, 1);
             meetingGlow.strokeRect(30, 30, 204, 164);
             const meetingSign = this.add.text(132, 180, '📣 Meeting in progress', {
-                fontSize: '9px', color: '#ffffff', backgroundColor: '#e2530f', padding: { x: 4, y: 2 }
+                fontSize: '9px', color: '#ffffff', backgroundColor: '#e58fb6', padding: { x: 4, y: 2 }
             }).setOrigin(0.5).setDepth(6).setVisible(false);
             const you = this.add.container(58, 118).setDepth(5).setVisible(false);
             if (this.textures.exists('boss')) {
                 you.add(this.add.sprite(0, -8, 'boss', 14));
             }
             you.add(this.add.text(0, 10, 'You 👑', {
-                fontSize: '8px', color: '#ffffff', backgroundColor: '#6b3fa0cc', padding: { x: 2, y: 1 }
+                fontSize: '8px', color: '#ffffff', backgroundColor: '#c3a6eecc', padding: { x: 2, y: 1 }
             }).setOrigin(0.5, 0));
 
             eventBus.addEventListener('camera-fit', (event: Event) => {
@@ -719,14 +735,14 @@ export class OfficeScene extends Phaser.Scene {
                     if (this.textures.exists(charKey)) {
                         sprite = this.add.sprite(0, -8, charKey, 0);
                     } else {
-                        sprite = this.add.rectangle(0, -8, 16, 32, 0x6b3fa0);
+                        sprite = this.add.rectangle(0, -8, 16, 32, 0xc3a6ee);
                     }
 
                     // Thought bubble (word-wrapped)
                     const thoughtBubble = this.add.text(0, -36, '', {
                         fontSize: '9px',
                         color: '#ffffff',
-                        backgroundColor: '#4b2d63ee',
+                        backgroundColor: '#b48fd9ee',
                         padding: { x: 5, y: 4 },
                         align: 'center',
                         wordWrap: { width: 130, useAdvancedWrap: true }
@@ -742,12 +758,12 @@ export class OfficeScene extends Phaser.Scene {
                     // Name label
                     const label = this.add.text(0, 16, agent.name, {
                         fontSize: '10px', color: '#ffffff',
-                        backgroundColor: '#6b3fa0cc', padding: { x: 2, y: 1 }
+                        backgroundColor: '#c3a6eecc', padding: { x: 2, y: 1 }
                     }).setOrigin(0.5, 0);
 
                     // Focus highlight ring (hidden by default)
                     const focusRing = this.add.graphics();
-                    focusRing.lineStyle(1, 0x6b3fa0, 0.8);
+                    focusRing.lineStyle(1, 0xc3a6ee, 0.8);
                     focusRing.strokeCircle(0, 0, 14);
                     focusRing.setVisible(false);
 
@@ -936,57 +952,57 @@ export class OfficeScene extends Phaser.Scene {
             const g = this.add.graphics();
             switch (item.type) {
                 case 'plant':
-                    g.fillStyle(0xff8c2e, 1);
+                    g.fillStyle(0xf4a7c3, 1);
                     g.fillRect(-5, 0, 10, 8);
-                    g.fillStyle(0x4fcf2a, 1);
+                    g.fillStyle(0x8fd3a0, 1);
                     g.fillCircle(0, -5, 6);
-                    g.fillStyle(0x7dff4a, 1);
+                    g.fillStyle(0xaee6bb, 1);
                     g.fillCircle(-3, -7, 4);
                     g.fillCircle(4, -6, 4);
                     break;
                 case 'desk':
-                    g.fillStyle(0xc85a12, 1);
+                    g.fillStyle(0xf9c9dc, 1);
                     g.fillRect(-12, -8, 24, 16);
-                    g.fillStyle(0x140c1a, 1);
+                    g.fillStyle(0x7d6b91, 1);
                     g.fillRect(-8, -6, 10, 6);
                     break;
                 case 'bookshelf':
-                    g.fillStyle(0xc85a12, 1);
+                    g.fillStyle(0xf9c9dc, 1);
                     g.fillRect(-8, -12, 16, 24);
-                    g.fillStyle(0xffb627, 1);
+                    g.fillStyle(0xf9dc7a, 1);
                     g.fillRect(-6, -8, 3, 6);
-                    g.fillStyle(0x2b7f6b, 1);
+                    g.fillStyle(0x9cc9f5, 1);
                     g.fillRect(-2, -8, 3, 6);
-                    g.fillStyle(0xff7a1a, 1);
+                    g.fillStyle(0xf7a8c4, 1);
                     g.fillRect(2, -8, 3, 6);
                     break;
                 case 'coffee_machine':
-                    g.fillStyle(0x140c1a, 1);
+                    g.fillStyle(0x7d6b91, 1);
                     g.fillRect(-6, -8, 12, 16);
-                    g.fillStyle(0xe2530f, 1);
+                    g.fillStyle(0xf28bb0, 1);
                     g.fillCircle(0, 4, 2);
                     break;
                 case 'table':
-                    g.fillStyle(0xc85a12, 1);
+                    g.fillStyle(0xf9c9dc, 1);
                     g.fillRect(-10, -6, 20, 12);
                     break;
                 case 'chair':
-                    g.fillStyle(0x3f2656, 1);
+                    g.fillStyle(0xd7c2f2, 1);
                     g.fillCircle(0, 0, 6);
                     break;
                 case 'whiteboard':
-                    g.fillStyle(0x3d2a4a, 1);
+                    g.fillStyle(0xfffafc, 1);
                     g.fillRect(-10, -6, 20, 12);
-                    g.lineStyle(1, 0x4b2d63, 1);
+                    g.lineStyle(1, 0xb9a3cf, 1);
                     g.strokeRect(-10, -6, 20, 12);
                     break;
                 default:
-                    g.fillStyle(0x5a3a70, 1);
+                    g.fillStyle(0xe6d6f0, 1);
                     g.fillRect(-6, -6, 12, 12);
             }
             group.add(g);
             if (item.label) {
-                const label = this.add.text(0, 10, item.label.slice(0, 8), { fontSize: '8px', color: '#b58be0' }).setOrigin(0.5, 0);
+                const label = this.add.text(0, 10, item.label.slice(0, 8), { fontSize: '8px', color: '#8a6aa8' }).setOrigin(0.5, 0);
                 group.add(label);
             }
             group.setSize(22, 22);

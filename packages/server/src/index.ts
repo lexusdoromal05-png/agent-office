@@ -11,6 +11,7 @@ import { parseIngest, parseWhatsAppWebhook, verifyWhatsAppSignature } from './op
 import { env } from './ops/connectors/http';
 import { ACCOUNTS } from './ops/watchlist';
 import { CommandKind } from './ops/types';
+import { MEETING_PROMPTS, MeetingService } from './meeting';
 
 // Setup Express. The raw body is kept so webhook signatures can be verified.
 const app = express();
@@ -131,6 +132,54 @@ app.post('/api/ops/actions/:id/execute', route(async (req, res) => {
 
 app.post('/api/ops/actions/:id/reject', route(async (req, res) => {
     res.json({ ok: true, action: await cypher.rejectAction(Number(req.params.id)) });
+}));
+
+// ─── Team meetings: the team answers whatever you ask, from what they did today ───
+const meeting = new MeetingService(new OllamaAdapter(OLLAMA_URL), process.env.OPS_MODEL || AGENT_MODEL, opsStore);
+OfficeRoom.meetingResponder = (question) => meeting.answer(question);
+
+app.get('/api/team/state', (req, res) => {
+    const room = OfficeRoom.getActiveRoom();
+    res.json({
+        ok: true,
+        officeOpen: Boolean(room),
+        meeting: room?.isMeetingActive() || false,
+        prompts: MEETING_PROMPTS,
+        agents: Object.entries(TEAM).map(([id, m]) => ({ id, name: m.name, role: m.role, costume: m.costume })),
+    });
+});
+
+app.post('/api/team/meeting', (req, res) => {
+    const room = OfficeRoom.getActiveRoom();
+    if (!room) {
+        res.status(503).json({ ok: false, error: 'Open the office in your browser first.' });
+        return;
+    }
+    room.setMeeting(Boolean(req.body?.active));
+    res.json({ ok: true, meeting: room.isMeetingActive() });
+});
+
+app.post('/api/team/ask', route(async (req, res) => {
+    const room = OfficeRoom.getActiveRoom();
+    const question = text(req.body?.question, 1000);
+    if (!room) {
+        res.status(503).json({ ok: false, error: 'Open the office in your browser first.' });
+        return;
+    }
+    if (!room.isMeetingActive()) {
+        res.status(409).json({ ok: false, error: 'Call a meeting first.' });
+        return;
+    }
+    if (question.length < 2) {
+        res.status(400).json({ ok: false, error: 'Type a question for the team.' });
+        return;
+    }
+    room.broadcast('chat', { sender: 'You', text: `🎤 ${question}` });
+    try {
+        res.json({ ok: true, replies: await meeting.answer(question) });
+    } catch (e: any) {
+        res.status(409).json({ ok: false, error: String(e?.message || e) });
+    }
 }));
 
 // WhatsApp Business Cloud API webhook: verification handshake, then signed message deliveries.

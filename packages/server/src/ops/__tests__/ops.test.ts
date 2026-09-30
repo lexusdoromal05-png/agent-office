@@ -178,10 +178,23 @@ describe('inbox parsing', () => {
     });
 });
 
-describe('team names', () => {
-    it('gives every agent one of the Halloween names, each used once', () => {
-        const { TEAM, AGENT_NAMES, shuffle } = require('../../team');
-        expect(Object.values(TEAM).map((m: any) => m.name).sort()).toEqual([...AGENT_NAMES].sort());
+describe('team', () => {
+    it('uses the requested names and gives each agent a different costume', () => {
+        const { TEAM, COSTUMES, shuffle } = require('../../team');
+        expect(TEAM.killjoy.name).toBe('Mini-Vambby');
+        expect(TEAM.jett.name).toBe('Lexus');
+        expect(TEAM.raze.name).toBe('Alon');
+        expect(TEAM.clove.name).toBe('Gideon');
+        expect(Object.values(TEAM).map((m: any) => m.costume).sort()).toEqual([...COSTUMES].sort());
         expect(shuffle([1, 2, 3, 4], () => 0)).toEqual([2, 3, 4, 1]);
+    });
+});
+
+describe('meeting', () => {
+    it('lets only the named agents answer, or everyone when nobody is named', () => {
+        const { addressedAgents } = require('../../meeting');
+        expect(addressedAgents('Alon, how is outreach going?')).toEqual(['raze']);
+        expect(addressedAgents('mini vambby and Gideon: any blockers?')).toEqual(['killjoy', 'clove']);
+        expect(addressedAgents('How is the team?')).toEqual(['killjoy', 'jett', 'raze', 'clove']);
     });
 });
