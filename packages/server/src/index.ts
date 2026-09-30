@@ -6,7 +6,7 @@ import { OllamaAdapter } from '@agent-office/adapters';
 import { AGENT_MODEL, OLLAMA_URL } from './config';
 import { DEFAULT_AGENT_ID, TEAM } from './team';
 import { OpsStore } from './ops/OpsStore';
-import { BusyError, COMMAND_LABELS, OpsAgent, parseCommand } from './ops/OpsAgent';
+import { BusyError, COMMAND_LABELS, UserError, OpsAgent, parseCommand } from './ops/OpsAgent';
 import { parseIngest, parseWhatsAppWebhook, verifyWhatsAppSignature } from './ops/connectors/inbox';
 import { env } from './ops/connectors/http';
 import { ACCOUNTS } from './ops/watchlist';
@@ -56,7 +56,7 @@ const route = (handler: Handler) => async (req: express.Request, res: express.Re
         await opsReady;
         await handler(req, res);
     } catch (e: any) {
-        res.status(e instanceof BusyError ? 409 : 500).json({ ok: false, error: String(e?.message || e) });
+        res.status(e instanceof BusyError ? 409 : e instanceof UserError ? 400 : 500).json({ ok: false, error: String(e?.message || e) });
     }
 };
 

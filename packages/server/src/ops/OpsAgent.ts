@@ -4,7 +4,7 @@ import { buildConnectors, describeConnectors, sweep } from './connectors';
 import { postSlackMessage } from './connectors/slack';
 import { addJiraComment } from './connectors/jira';
 import { list } from './connectors/http';
-import { Analysis, followUpCheck, formatRecordsForPrompt, selectRecords, sweepSince, validateAnalysis } from './analyze';
+import { Analysis, followUpCheck, previousWorkingDayStart, STALE_AFTER_MS, formatRecordsForPrompt, selectRecords, sweepSince, validateAnalysis } from './analyze';
 import { COMMAND_INSTRUCTIONS, OPERATING_RULES, OUTPUT_SCHEMA } from './operatingMode';
 import { renderBrief, when } from './render';
 import { completeJson } from './llm';
@@ -30,6 +30,9 @@ const EXECUTORS: Partial<Record<ActionType, (target: string, body: string) => Pr
 };
 
 export class BusyError extends Error { }
+
+// A problem with the request itself (unknown account, action already handled…).
+export class UserError extends Error { }
 
 export class OpsAgent {
     private connectors: Connector[];
@@ -58,11 +61,11 @@ export class OpsAgent {
         const lastSweep = await this.store.getSetting(LAST_SWEEP_KEY);
         const daily = sweepSince(lastSweep, now);
         const account = command === 'client' ? findAccount(arg) : undefined;
-        if (command === 'client' && !account) throw new Error(`"${arg}" is not a watched account.`);
+        if (command === 'client' && !account) throw new UserError(`"${arg}" is not a watched account.`);
 
         const since = {
             start_my_day: daily,
-            do_now: daily,
+            do_now: new Date(Math.min(daily.getTime(), previousWorkingDayStart(now).getTime())),
             missing: new Date(Math.min(daily.getTime(), now.getTime() - 7 * DAY)),
             team: new Date(now.getTime() - 7 * DAY),
             client: new Date(now.getTime() - 14 * DAY),
@@ -85,7 +88,12 @@ export class OpsAgent {
 
         let analysis: Analysis = { items: [], clients: [], proposedActions: [], followUps: {}, questions: [], answer: '' };
         let analysisError = '';
-        if (shown.length) {
+        if (!shown.length) {
+            // Nothing new arrived: carry the saved operational model forward with its original sources.
+            analysis.items = (await this.store.listItems(true)).map((i) => ({
+                ...i, stale: !i.lastEvidenceAt || now.getTime() - new Date(i.lastEvidenceAt).getTime() > STALE_AFTER_MS,
+            }));
+        } else {
             try {
                 const raw = await completeJson(this.adapter, this.model, OPERATING_RULES, await this.prompt(command, arg, now, since, shown, statuses, followUps), 0.2);
                 analysis = validateAnalysis(raw, records, now);
@@ -94,7 +102,7 @@ export class OpsAgent {
             }
         }
 
-        await this.store.upsertItems(analysis.items);
+        if (shown.length) await this.store.upsertItems(analysis.items);
         await this.queueActions(analysis);
         if (!account && ['start_my_day', 'do_now', 'missing'].includes(command) && statuses.some((s) => s.ok)) {
             await this.store.setSetting(LAST_SWEEP_KEY, now.toISOString());
@@ -107,7 +115,7 @@ export class OpsAgent {
             pendingActions: pending.length, followUpDrafts: drafted, identityConfigured: myNames().length > 0,
         });
         if (!shown.length) {
-            text = `NO NEW EVIDENCE — none of the connected systems returned activity since ${when(since.toISOString())}.\n\n${text}`;
+            text = `NO NEW EVIDENCE — none of the connected systems returned activity since ${when(since.toISOString())}. Showing open items from earlier sweeps.\n\n${text}`;
         }
         if (analysisError) {
             text = `ANALYSIS UNAVAILABLE — ${analysisError}\nThe sweep ran (${records.length} records) but could not be reconciled. Sections below show only what could be read directly.\n\n${text}`;
@@ -168,9 +176,9 @@ export class OpsAgent {
         const action = await this.pendingAction(id);
         const executor = EXECUTORS[action.type];
         if (!executor) {
-            throw new Error(`Cypher cannot send ${action.type.replace('_', ' ')}s. Copy the text and send it yourself.`);
+            throw new UserError(`Cypher cannot send ${action.type.replace('_', ' ')}s. Copy the text and send it yourself.`);
         }
-        if (!action.target) throw new Error('Set a target (channel ID or issue key) first.');
+        if (!action.target) throw new UserError('Set a target (channel ID or issue key) first.');
         try {
             const confirmation = await executor(action.target, action.body);
             return (await this.store.updateAction(id, { status: 'executed', result: confirmation }))!;
@@ -182,8 +190,8 @@ export class OpsAgent {
     // Failed actions stay open so they can be fixed and retried or rejected.
     private async pendingAction(id: number): Promise<StoredAction> {
         const action = await this.store.getAction(id);
-        if (!action) throw new Error('Action not found.');
-        if (action.status !== 'pending' && action.status !== 'failed') throw new Error(`This action is already ${action.status}.`);
+        if (!action) throw new UserError('Action not found.');
+        if (action.status !== 'pending' && action.status !== 'failed') throw new UserError(`This action is already ${action.status}.`);
         return action;
     }
 }
