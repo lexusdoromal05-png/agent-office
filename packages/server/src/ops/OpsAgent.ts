@@ -9,6 +9,7 @@ import { COMMAND_INSTRUCTIONS, OPERATING_RULES, OUTPUT_SCHEMA } from './operatin
 import { renderBrief, when } from './render';
 import { completeJson } from './llm';
 import { ActionType, CommandKind, Connector, SourceRecord } from './types';
+import { OPS_AGENT_NAME } from '../team';
 import { findAccount, FOLLOW_UP_PEOPLE, myNames } from './watchlist';
 
 const DAY = 86_400_000;
@@ -47,7 +48,7 @@ export class OpsAgent {
     }
 
     async run(command: CommandKind, arg = ''): Promise<StoredBrief> {
-        if (this.running) throw new BusyError('Cypher is already running a sweep. Wait for it to finish.');
+        if (this.running) throw new BusyError(`${OPS_AGENT_NAME} is already running a sweep. Wait for it to finish.`);
         this.running = true;
         try {
             return await this.runSweep(command, arg);
@@ -176,7 +177,7 @@ export class OpsAgent {
         const action = await this.pendingAction(id);
         const executor = EXECUTORS[action.type];
         if (!executor) {
-            throw new UserError(`Cypher cannot send ${action.type.replace('_', ' ')}s. Copy the text and send it yourself.`);
+            throw new UserError(`${OPS_AGENT_NAME} cannot send ${action.type.replace('_', ' ')}s. Copy the text and send it yourself.`);
         }
         if (!action.target) throw new UserError('Set a target (channel ID or issue key) first.');
         try {

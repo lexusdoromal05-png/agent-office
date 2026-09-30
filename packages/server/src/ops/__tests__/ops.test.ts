@@ -177,3 +177,11 @@ describe('inbox parsing', () => {
         expect(adfToText({ type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Still testing' }] }] }).trim()).toBe('Still testing');
     });
 });
+
+describe('team names', () => {
+    it('gives every agent one of the Halloween names, each used once', () => {
+        const { TEAM, AGENT_NAMES, shuffle } = require('../../team');
+        expect(Object.values(TEAM).map((m: any) => m.name).sort()).toEqual([...AGENT_NAMES].sort());
+        expect(shuffle([1, 2, 3, 4], () => 0)).toEqual([2, 3, 4, 1]);
+    });
+});

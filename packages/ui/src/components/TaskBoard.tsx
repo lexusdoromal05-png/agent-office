@@ -76,7 +76,7 @@ export function TaskBoard() {
                     placeholder="Assign a task..."
                     style={{
                         width: '100%', padding: '8px 10px', borderRadius: 6,
-                        border: '1px solid #c9a7eb', backgroundColor: '#7a5a93',
+                        border: '1px solid #6b3fa0', backgroundColor: '#2d1f3a',
                         color: 'white', fontSize: '12px', outline: 'none',
                         boxSizing: 'border-box', marginBottom: 6
                     }}
@@ -87,16 +87,19 @@ export function TaskBoard() {
                         onChange={(e) => setTargetAgent(e.target.value)}
                         style={{
                             flex: 1, padding: '6px', borderRadius: 6,
-                            border: '1px solid #c9a7eb', backgroundColor: '#7a5a93',
+                            border: '1px solid #6b3fa0', backgroundColor: '#2d1f3a',
                             color: '#aaa', fontSize: '11px'
                         }}
                     >
                         <option value="auto">🤖 Auto-assign</option>
-                        <option value="cypher">Cypher (Operations)</option>
+                        <option value="cypher">🧙 Witch (Operations)</option>
+                        <option value="vampire">🧛 Vampire (Deadlines)</option>
+                        <option value="mummy">🧟 Mummy (Meeting prep)</option>
+                        <option value="pumpkin">🎃 Pumpkin (Morale)</option>
                     </select>
                     <button type="submit" style={{
                         padding: '6px 14px', borderRadius: 6, border: 'none',
-                        backgroundColor: '#e58fb6', color: 'white', fontSize: '11px',
+                        backgroundColor: '#e2530f', color: 'white', fontSize: '11px',
                         cursor: 'pointer', fontWeight: 'bold'
                     }}>
                         Assign
@@ -107,7 +110,7 @@ export function TaskBoard() {
             {/* Task List */}
             <div style={{ flex: 1, overflowY: 'auto', fontSize: '12px' }}>
                 {tasks.length === 0 && (
-                    <p style={{ color: '#e6d6f0', fontStyle: 'italic', margin: 0, fontSize: '11px' }}>
+                    <p style={{ color: '#d9c7e6', fontStyle: 'italic', margin: 0, fontSize: '11px' }}>
                         No tasks yet. Type above to assign work to agents!
                     </p>
                 )}
@@ -127,7 +130,7 @@ export function TaskBoard() {
                 ))}
             </div>
 
-            <div style={{ marginTop: 8, fontSize: '10px', color: '#e6d6f0', borderTop: '1px solid #c9a7eb', paddingTop: 6 }}>
+            <div style={{ marginTop: 8, fontSize: '10px', color: '#d9c7e6', borderTop: '1px solid #6b3fa0', paddingTop: 6 }}>
                 🤖 Engine: Ollama Local • 💾 SQLite Persistence
             </div>
         </div>

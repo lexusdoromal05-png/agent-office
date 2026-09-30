@@ -13,6 +13,7 @@ export class AgentState extends Schema {
     declare reputation: number;
     declare riskLevel: number;
     declare momentum: number;
+    declare costume: string;
 }
 
 type("string")(AgentState.prototype, "id");
@@ -27,6 +28,7 @@ type("number")(AgentState.prototype, "mood");
 type("number")(AgentState.prototype, "reputation");
 type("number")(AgentState.prototype, "riskLevel");
 type("number")(AgentState.prototype, "momentum");
+type("string")(AgentState.prototype, "costume");
 
 
 export class OfficeState extends Schema {

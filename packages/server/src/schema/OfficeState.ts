@@ -13,6 +13,7 @@ export class AgentState extends Schema {
     @type('number') reputation: number;
     @type('number') riskLevel: number;
     @type('number') momentum: number;
+    @type('string') costume: string;
 
     constructor(id: string, name: string) {
         super();
@@ -28,6 +29,7 @@ export class AgentState extends Schema {
         this.reputation = 0.5;
         this.riskLevel = 0.2;
         this.momentum = 0.4;
+        this.costume = '';
     }
 }
 

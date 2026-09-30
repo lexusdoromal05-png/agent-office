@@ -3,7 +3,7 @@ import { eventBus } from '../events';
 
 const buttonStyle: React.CSSProperties = {
     border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-    background: 'rgba(92,62,112,0.92)', color: 'white', fontSize: 11, fontWeight: 700,
+    background: 'rgba(26,14,34,0.92)', color: 'white', fontSize: 11, fontWeight: 700,
     boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
 };
 
@@ -32,7 +32,7 @@ export function PanelToolbar({ hidden, onToggleHidden }: { hidden: boolean; onTo
             display: 'flex', gap: 6, zIndex: 50,
         }}>
             {!hidden && <button style={buttonStyle} onClick={minimizeAll} title="Shrink every panel to its title bar">➖ Minimize all</button>}
-            <button style={{ ...buttonStyle, background: '#e58fb6' }} onClick={onToggleHidden} title="Show or hide every panel">
+            <button style={{ ...buttonStyle, background: '#e2530f' }} onClick={onToggleHidden} title="Show or hide every panel">
                 {hidden ? '👁 Show panels' : '🙈 Hide panels'}
             </button>
             <button style={buttonStyle} onClick={toggleFit} title="Zoom out to see the whole office, or zoom back in">

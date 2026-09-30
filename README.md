@@ -45,7 +45,9 @@ https://github.com/user-attachments/assets/da76e31d-ff34-4ce1-9092-5bf9e6ee2058
 
 ## 🛰️ Cypher — Connector-First Operations Agent
 
-The office team has been reset to a single agent: **Cypher**, a chief-of-staff agent that reads your connected work systems, reconciles what each one says, and briefs you on what needs you. It lives at its desk in the office and in the **🛰️ Command Center** panel.
+🎃 **Halloween edition:** the office is decorated (jack-o'-lanterns, cobwebs, candles, bats, a ghost) and four agents work in costume — witch, vampire, mummy, and pumpkin. Each server start gives them a random name from Lexus, Sia, Mini-Vambby, and Alon (edit `AGENT_NAMES` in `packages/server/src/team.ts`). The witch runs the operations work described below; the other three are office companions.
+
+The operations agent (called **Cypher** below) is a chief-of-staff agent that reads your connected work systems, reconciles what each one says, and briefs you on what needs you. It lives at its desk in the office and in the **🛰️ Command Center** panel.
 
 | Command | What Cypher does |
 |---------|------------------|

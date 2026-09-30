@@ -83,7 +83,7 @@ export function CommandCenter() {
     const open = actions.filter((a) => a.status === 'pending' || a.status === 'failed');
 
     return (
-        <FloatingPanel id="command-center" title="🛰️ Cypher — Command Center" subtitle="Connector-first operations agent" width={460} defaultDock="left" defaultY={20} zIndex={19}>
+        <FloatingPanel id="command-center" title={`🧙 ${status?.agent.name || 'Ops agent'} — Command Center`} subtitle="Connector-first operations agent · Happy Halloween 🎃" width={460} defaultDock="left" defaultY={20} zIndex={19}>
             <div style={{ maxHeight: '72vh', overflowY: 'auto', paddingRight: 4 }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
                     {status?.connectors.map((c) => (
@@ -141,7 +141,7 @@ export function CommandCenter() {
                     <button style={smallButton} disabled={Boolean(running) || question.trim().length < 3} onClick={() => run({ text: question }, question)}>Ask</button>
                 </div>
 
-                {running && <div style={{ fontSize: 11, color: '#f7c6dc', marginBottom: 8 }}>🛰️ Sweeping connected systems for "{running}"… this can take a minute or two.</div>}
+                {running && <div style={{ fontSize: 11, color: '#ffb347', marginBottom: 8 }}>🛰️ Sweeping connected systems for "{running}"… this can take a minute or two.</div>}
                 {error && <div style={{ fontSize: 11, color: '#ffadad', marginBottom: 8 }}>{error}</div>}
 
                 {open.length > 0 && (
@@ -169,7 +169,7 @@ export function CommandCenter() {
                     </div>
                 )}
                 {!brief && !running && (
-                    <div style={{ fontSize: 11, fontStyle: 'italic', color: '#e6d6f0' }}>
+                    <div style={{ fontSize: 11, fontStyle: 'italic', color: '#d9c7e6' }}>
                         No briefs yet. Press "START MY DAY" to run the first sweep.
                     </div>
                 )}
@@ -225,7 +225,7 @@ function ActionCard({ action, onChange }: { action: Action; onChange: (a: Action
                     : <CopyButton text={body} />}
                 <button style={smallButton} onClick={() => call(`/api/ops/actions/${action.id}/reject`, { method: 'POST' })}>Reject</button>
             </div>
-            {!executable && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 4 }}>Cypher cannot send this type. Copy it and send it yourself, then reject it here to clear it.</div>}
+            {!executable && <div style={{ fontSize: 9, opacity: 0.7, marginTop: 4 }}>The agent cannot send this type. Copy it and send it yourself, then reject it here to clear it.</div>}
             {error && <div style={{ fontSize: 10, color: '#ffadad', marginTop: 4 }}>{error}</div>}
         </div>
     );

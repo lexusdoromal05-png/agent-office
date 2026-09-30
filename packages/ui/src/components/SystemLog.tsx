@@ -52,7 +52,7 @@ export function SystemLog() {
         <div style={{ maxHeight: '30vh', display: 'flex', flexDirection: 'column' }}>
             <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', fontSize: '10px', lineHeight: 1.5 }}>
                 {logs.length === 0 && (
-                    <p style={{ color: '#e6d6f0', fontStyle: 'italic', margin: 0 }}>Waiting for agent events...</p>
+                    <p style={{ color: '#d9c7e6', fontStyle: 'italic', margin: 0 }}>Waiting for agent events...</p>
                 )}
                 {logs.map(log => (
                     <div key={log.id} style={{
@@ -62,10 +62,10 @@ export function SystemLog() {
                         <span style={{ opacity: 0.4, minWidth: 48 }}>{log.time}</span>
                         <span>{actionIcons[log.action] || '•'}</span>
                         <span>
-                            <strong style={{ color: '#f7c6dc' }}>{log.agent}</strong>
+                            <strong style={{ color: '#ffb347' }}>{log.agent}</strong>
                             {' '}
                             <span style={{ color: '#f2e6fa' }}>{log.action}</span>
-                            {log.thought && <span style={{ color: '#e6d6f0', fontStyle: 'italic' }}> — "{log.thought.slice(0, 60)}"</span>}
+                            {log.thought && <span style={{ color: '#d9c7e6', fontStyle: 'italic' }}> — "{log.thought.slice(0, 60)}"</span>}
                         </span>
                     </div>
                 ))}

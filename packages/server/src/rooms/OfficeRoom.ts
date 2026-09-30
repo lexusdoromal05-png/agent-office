@@ -51,6 +51,9 @@ export class OfficeRoom extends Room<OfficeState> {
     // Furniture interaction points: named locations agents can walk to
     private furnitureTargets: Record<string, { x: number; y: number; type: string }> = {
         'cypher-desk': { x: 5, y: 18, type: 'desk' },
+        'vampire-desk': { x: 5, y: 23, type: 'desk' },
+        'mummy-desk': { x: 5, y: 28, type: 'desk' },
+        'pumpkin-desk': { x: 11, y: 18, type: 'desk' },
         'meeting-table': { x: 10, y: 5, type: 'table' },
         'coffee-machine': { x: 25, y: 25, type: 'appliance' },
         'whiteboard': { x: 17, y: 3, type: 'board' },
@@ -202,17 +205,17 @@ export class OfficeRoom extends Room<OfficeState> {
         this.office = new Office(config);
 
         // Setup Core Agents with AI capabilities
-        const setupCoreAgent = async (id: string, name: string, role: string, job: string, x: number, y: number) => {
+        const setupCoreAgent = async (id: string, name: string, role: string, job: string, x: number, y: number, costume = '') => {
             this.state.createAgent(id, name);
             const state = this.state.agents.get(id);
-            if (state) { state.x = x; state.y = y; }
+            if (state) { state.x = x; state.y = y; state.costume = costume; }
 
             const coreAgent = new Agent({
                 id, name, role, avatar: 'sprite.png',
                 inference: {
                     provider: 'ollama',
                     model: AGENT_MODEL,
-                    systemPrompt: `You are ${name}, the ${role} in a virtual office. ${job} Be social, do your work, and collaborate with colleagues. Keep thoughts SHORT.`,
+                    systemPrompt: `You are ${name}, the ${role} in a Halloween-decorated virtual office, wearing a ${costume} costume. ${job} Be social, do your work, and collaborate with colleagues. Keep thoughts SHORT.`,
                 },
                 personality: {
                     traits: { openness: 0.8, conscientiousness: 0.9, extraversion: 0.6, agreeableness: 0.7, neuroticism: 0.1 },
@@ -243,7 +246,7 @@ export class OfficeRoom extends Room<OfficeState> {
         };
 
         for (const [id, member] of Object.entries(TEAM)) {
-            await setupCoreAgent(id, member.name, member.role, member.job, member.spawn.x, member.spawn.y);
+            await setupCoreAgent(id, member.name, member.role, member.job, member.spawn.x, member.spawn.y, member.costume);
         }
         this.rebuildRelationshipGraph();
         const savedLayout = await this.memoryStore.loadLayout('default');
